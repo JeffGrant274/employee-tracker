@@ -16,11 +16,11 @@ connection.connect(function (err) {
   if (err) throw err;
   questions();
 });
-
-function questions() {
-  log(
+ log(
     chalk.red(figlet.textSync("Employee Tracker", { horizontalLayout: "full" }))
   );
+function questions() {
+ 
   inquirer
     .prompt({
       message: "Please select an option",
@@ -86,7 +86,7 @@ function viewDept() {
     console.table(res);
     questions();
   });
-  console.log(res);
+ 
 }
 
 function addEmployee() {
