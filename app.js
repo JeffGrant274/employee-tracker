@@ -1,33 +1,207 @@
-const inquirer = require ('inquirer');
-const mysql = require ('mysql2');
-const cTable = require('console.table')
+const mysql = require("mysql");
+const inquirer = require("inquirer");
+const table = require("console.table");
+const chalk = require("chalk");
+const figlet = require("figlet");
+const log = console.log;
 
-inquirer
-  .prompt([
-    {
-      type: "input",
-      message: "Please Enter a managers name?",
-      name: "managerName",
-    },
-    {
-      type: "input",
-      message: "Please enter their employee ID",
-      name: "managerId",
-    },
-    {
-      type: "input",
-      message: "Please enter their email address",
-      name: "managerEmail",
-    },
-    {
-      type: "input",
-      message: "Please enteir their office number",
-      name: "managerOffNum",
-    },
-    {
+var connection = mysql.createConnection({
+  host: "localhost",
+  user: "root",
+  password: "Alexander7996",
+  database: "joseDB",
+});
+
+connection.connect(function (err) {
+  if (err) throw err;
+  questions();
+});
+
+function questions() {
+  log(
+    chalk.red(figlet.textSync("Employee Tracker", { horizontalLayout: "full" }))
+  );
+  inquirer
+    .prompt({
+      message: "Please select an option",
       type: "list",
-      message: "Would you like to add a team member?  Select the role below.",
-      choices: ["Engineer", "Intern", "Exit"],
-      name: "moreStaff",
-    },
-  ])
+      name: "selection",
+      choices: [
+        "View all employees",
+        "View all departments",
+        "Add an employee",
+        "Add a department",
+        "Add a role",
+        "Update an Employee Role",
+        "Exit",
+      ],
+    })
+    .then((answers) => {
+      console.log(answers.selection);
+      switch (answers.selection) {
+        case "View all employees":
+          viewEmployees();
+          break;
+
+        case "View all departments":
+          viewDept();
+          break;
+
+        case "Add an employee":
+          addEmployee();
+          break;
+
+        case "Add a department":
+          addDept();
+          break;
+
+        case "Add a role":
+          addRole();
+          break;
+
+        case "Update an Employee Role":
+          updateRole();
+          break;
+
+        default:
+          connection.end();
+          break;
+      }
+    });
+}
+
+function viewEmployees() {
+  var query = "SELECT * FROM employee";
+  connection.query(query, function (err, res) {
+    if (err) throw err;
+    console.table(res);
+    questions();
+  });
+}
+
+function viewDept() {
+  var query = "SELECT * FROM department";
+  connection.query(query, function (err, res) {
+    if (err) throw err;
+    console.table(res);
+    questions();
+  });
+  console.log(res);
+}
+
+function addEmployee() {
+  inquirer
+    .prompt([
+      {
+        type: "input",
+        name: "firName",
+        message: "What is the employee's first name?",
+      },
+      {
+        type: "input",
+        name: "laName",
+        message: "What is the employee's last name?",
+      },
+      {
+        type: "number",
+        name: "roleId",
+        message: "What is the employee's role Id",
+      },
+      {
+        type: "number",
+        name: "manId",
+        message: "What is the employee's manager's Id?",
+      },
+    ])
+    .then(function (res) {
+      connection.query(
+        "INSERT INTO employee (first_name, last_name, role_id, manager_id) VALUES (?, ?, ?, ?)",
+        [res.firName, res.laName, res.roleId, res.manId],
+        function (err, res) {
+          if (err) throw err;
+          console.table(res, "Added");
+          questions();
+        }
+      );
+    });
+}
+
+function addDept() {
+  inquirer
+    .prompt([
+      {
+        type: "input",
+        name: "dept",
+        message: "Please enter the new department",
+      },
+    ])
+    .then(function (res) {
+      connection.query(
+        "INSERT INTO department (name) VALUES (?)",
+        [res.dept],
+        function (err, res) {
+          if (err) throw err;
+          console.table(res, "Added");
+          questions();
+        }
+      );
+    });
+}
+
+function addRole() {
+  inquirer
+    .prompt([
+      {
+        message: "Enter the title:",
+        type: "input",
+        name: "title",
+      },
+      {
+        message: "Enter the salary:",
+        type: "number",
+        name: "salary",
+      },
+      {
+        message: "Enter the department Id:",
+        type: "number",
+        name: "dept_id",
+      },
+    ])
+    .then(function (response) {
+      connection.query(
+        "INSERT INTO roles (title, salary, department_id) values (?, ?, ?)",
+        [response.title, response.salary, response.dept_id],
+        function (err, res) {
+          console.table(res);
+        }
+      );
+      questions();
+    });
+}
+
+function updateRole() {
+  inquirer
+    .prompt([
+      {
+        message:
+          "Using the first name, which employee would you like to update?",
+        type: "input",
+        name: "name",
+      },
+      {
+        message: "enter their new role Id:",
+        type: "number",
+        name: "role_id",
+      },
+    ])
+    .then(function (response) {
+      connection.query(
+        "UPDATE employee SET role_id = ? WHERE first_name = ?",
+        [response.role_id, response.name],
+        function (err, res) {
+          console.table(res);
+        }
+      );
+      questions();
+    });
+}
