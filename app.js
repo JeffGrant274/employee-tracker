@@ -1,3 +1,4 @@
+// declaring dependencies 
 const mysql = require("mysql");
 const inquirer = require("inquirer");
 const table = require("console.table");
@@ -5,6 +6,7 @@ const chalk = require("chalk");
 const figlet = require("figlet");
 const log = console.log;
 
+//server connection
 var connection = mysql.createConnection({
   host: "localhost",
   user: "root",
@@ -16,9 +18,13 @@ connection.connect(function (err) {
   if (err) throw err;
   questions();
 });
+
+//start title graphic
  log(
     chalk.red(figlet.textSync("Employee Tracker", { horizontalLayout: "full" }))
   );
+
+//initial menu prompt function
 function questions() {
  
   inquirer
@@ -70,6 +76,7 @@ function questions() {
     });
 }
 
+//function to view all employees 
 function viewEmployees() {
   var query = "SELECT * FROM employee";
   connection.query(query, function (err, res) {
@@ -79,6 +86,7 @@ function viewEmployees() {
   });
 }
 
+//function to view all departments
 function viewDept() {
   var query = "SELECT * FROM department";
   connection.query(query, function (err, res) {
@@ -89,6 +97,7 @@ function viewDept() {
  
 }
 
+//function to add an employee
 function addEmployee() {
   inquirer
     .prompt([
@@ -126,6 +135,7 @@ function addEmployee() {
     });
 }
 
+//function to add a department
 function addDept() {
   inquirer
     .prompt([
@@ -148,6 +158,7 @@ function addDept() {
     });
 }
 
+//function to add a role
 function addRole() {
   inquirer
     .prompt([
@@ -179,6 +190,7 @@ function addRole() {
     });
 }
 
+//function to update an employee's role
 function updateRole() {
   inquirer
     .prompt([
